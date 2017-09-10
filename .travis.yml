@@ -9,10 +9,10 @@ install:
 script:
   - mkdir out
   - script/export_images.sh out
-#
-# addons:
-#   artifacts: true
-#   s3_region: "us-west-1" # defaults to "us-east-1"
+
+addons:
+  artifacts: true
+  s3_region: "us-west-1" # defaults to "us-east-1"
 
 notifications:
   email: false

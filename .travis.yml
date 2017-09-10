@@ -1,0 +1,18 @@
+language: objective-c
+
+install:
+  - curl -L -o sketchtool-latest.zip http://sketchtool.bohemiancoding.com/sketchtool-latest.zip
+  - unzip sketchtool-latest.zip
+  - sh -x sketchtool/install.sh
+  - rm -rf sketchtool
+
+script:
+  - mkdir out
+  - script/export_images.sh out
+#
+# addons:
+#   artifacts: true
+#   s3_region: "us-west-1" # defaults to "us-east-1"
+
+notifications:
+  email: false

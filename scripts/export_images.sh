@@ -12,7 +12,6 @@ exportImages() {
     ${sketchtool} export slices "$srcFile" --output="$imagesDestDir"
 
     (cd "$imagesDestDir"; zip ../images.zip *)
-    rm -r "$imagesDestDir"
 }
 
 exportImages images.sketch

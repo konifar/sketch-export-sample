@@ -1,6 +1,6 @@
 #!/bin/bash -ue
 
-# usage: import_to_ios.sh ${GITHUB_TOKEN}
+# usage: import_to_ios.sh
 
 github_token=$GITHUB_TOKEN
 

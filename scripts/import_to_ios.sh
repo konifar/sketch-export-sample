@@ -71,6 +71,9 @@ EOF
 function send_pull_request() {
   cd $ROOT_DIR
 
+  git config user.email "example@example.com"
+  git config user.name "Travis-CI"
+
   git branch -D $COMPARE_BRANCH || true
   git checkout -b $COMPARE_BRANCH
   git add $ASSETS_DIR
@@ -82,7 +85,7 @@ function send_pull_request() {
 
   if [[ -n "`git status --porcelain | grep $ASSETS_DIR`" ]]; then
     git commit -m "Import images from Sketch"
-    git push -f origin $COMPARE_BRANCH
+    git push  --force --quiet "https://$github_token@github.com/konifar/sketch-export-sample.github.io.git" $COMPARE_BRANCH:$BASE_BRANCH > /dev/null 2>&1
     curl -s -X POST -H "Authorization: token $github_token" -d @- https://api.github.com/repos/konifar/sketch-export-sample/pulls <<EOF
 {
     "title":"Import images from Sketch",

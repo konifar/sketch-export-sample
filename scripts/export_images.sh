@@ -1,12 +1,8 @@
 #!/bin/bash
 
-destDir="$1"
+dest_dir="$1"
+file_name="$2"
 
 sketchtool=./sketchtool/bin/sketchtool
 
-exportImages() {
-    local srcFile="$1"
-    ${sketchtool} export slices "$srcFile" --output="$destDir"
-}
-
-exportImages images.sketch
+${sketchtool} export slices "$file_name" --output="$dest_dir"

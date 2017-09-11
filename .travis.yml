@@ -12,12 +12,6 @@ install:
 script:
   - mkdir -p out
   - scripts/export_images.sh out/images images.sketch
-
-# https://docs.travis-ci.com/user/deployment/custom/
-after_success:
-  - eval "$(ssh-agent -s)" #start the ssh agent
-  - chmod 600 .travis/deploy_key.pem # this key should have push access
-  - ssh-add .travis/deploy_key.pem
   - scripts/import_to_ios.sh
 
 notifications:

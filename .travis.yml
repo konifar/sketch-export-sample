@@ -1,10 +1,9 @@
+os: osx
+
 language: objective-c
 
 install:
-  - curl -L -o sketchtool-latest.zip http://sketchtool.bohemiancoding.com/sketchtool-latest.zip
-  - unzip sketchtool-latest.zip
-  - sh -x sketchtool/install.sh
-  - rm -rf sketchtool
+  - script/install_sketch.sh
 
 script:
   - mkdir out

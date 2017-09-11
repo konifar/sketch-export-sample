@@ -2,7 +2,7 @@
 
 # usage: import_to_ios.sh ${GITHUB_TOKEN}
 
-github_token=$1
+github_token=$GITHUB_TOKEN
 
 readonly ROOT_DIR=$PWD
 readonly ASSETS_DIR="ios/SketchExportSample/SketchExportSample/Assets.xcassets"

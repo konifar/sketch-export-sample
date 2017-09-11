@@ -12,7 +12,7 @@ install:
 script:
   - mkdir -p out
   - scripts/export_images.sh out/images images.sketch
-  - scripts/import_to_ios.sh $GITHUB_TOKEN
+  - scripts/import_to_ios.sh
 
 notifications:
   email: false

@@ -5,8 +5,8 @@
 github_token="$1"
 
 root_dir=$PWD
-images_asssets_dir="${root_dir}/ios/SketchExportSample/SketchExportSample/Assets.xcassets"
-images_dir="${root_dir}/out/images"
+images_asssets_dir="ios/SketchExportSample/SketchExportSample/Assets.xcassets"
+images_dir="out/images"
 
 base_branch='master'
 branch_name="import_ios_images_to_${base_branch}"
@@ -24,7 +24,7 @@ function exportImages() {
       filename=${file%%.*}
     fi
 
-    imageset_dir="$images_asssets_dir"/"$filename".imageset
+    imageset_dir="$root_dir"/"$images_asssets_dir"/"$filename".imageset
 
     mkdir -p "$imageset_dir"
     cp "$file" "$imageset_dir"/"$file"
@@ -69,6 +69,8 @@ EOF
 
 
 function sendPullRequest() {
+  cd $root_dir
+
   git branch -D "${branch_name}" || true
   git checkout -b "${branch_name}"
   git add $images_asssets_dir
@@ -78,22 +80,22 @@ function sendPullRequest() {
     exit 1
   fi
 
-#   if [[ -n "`git status --porcelain | grep ${images_asssets_dir}`" ]]; then
-#     git commit -m "Import images from Sketch"
-#     git push -f origin $branch_name
-#     curl -s -X POST -H "Authorization: token $github_token" -d @- https://api.github.com/repos/konifar/sketch-export-sample/pulls <<EOF
-# {
-#     "title":"Import images from Sketch",
-#     "head":"${branch_name}",
-#     "base":"${base_branch}"
-# }
-# EOF
-#     echo "Sent PullRequest"
-#   else
-#     echo "No changed files"
-#   fi
+  if [[ -n "`git status --porcelain | grep ${images_asssets_dir}`" ]]; then
+    git commit -m "Import images from Sketch"
+    git push -f origin $branch_name
+    curl -s -X POST -H "Authorization: token $github_token" -d @- https://api.github.com/repos/konifar/sketch-export-sample/pulls <<EOF
+{
+    "title":"Import images from Sketch",
+    "head":"${branch_name}",
+    "base":"${base_branch}"
+}
+EOF
+    echo "Sent PullRequest"
+  else
+    echo "No changed files"
+  fi
 }
 
 
-exportImages
+# exportImages
 sendPullRequest

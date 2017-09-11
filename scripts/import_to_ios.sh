@@ -2,58 +2,51 @@
 
 # usage: import_to_ios.sh ${GITHUB_TOKEN}
 
-github_token="$1"
+github_token=$1
 
-root_dir=$PWD
+readonly ROOT_DIR=$PWD
+readonly ASSETS_DIR="ios/SketchExportSample/SketchExportSample/Assets.xcassets"
+readonly IMAGES_DIR="out/images"
 
-images_asssets_dir="ios/SketchExportSample/SketchExportSample/Assets.xcassets"
+readonly BASE_BRANCH="master"
+readonly COMPARE_BRANCH="import_ios_images_to_$BASE_BRANCH"
 
-tmp_images_dir="import_images"
-tmp_images_asssets_dir="$tmp_images_dir"/"Assets.xcassets"
-tmp_app_icon_dir="import_app_icon"
-tmp_app_icon_asssets_dir="$tmp_app_icon_dir"/"Assets.xcassets"
+function export_images() {
+  cd $IMAGES_DIR
 
-images_dir="out/images"
-
-base_branch='master'
-branch_name="import_ios_images_to_${base_branch}"
-
-function exportImages() {
-  # find "$images_dir" -name '*_android*.png' -type f -delete
-  # echo "Removed files which are used in only Android app"
-
-  cd "$images_dir"
-
-  for file in *@2x.png *@3x.png ; do
+  for file in *.png *@2x.png *@3x.png ; do
     if [[ $file == *"@"* ]] ; then
-      fname=${file%%@*}
+      local filename=${file%%@*}
     else
-      fname=${file%%.*}
+      local filename=${file%%.*}
     fi
 
-    images_assets_dir="$tmp_images_asssets_dir"/"$fname".imageset
+    if [[ $filename == *"_android" ]]; then
+      echo "Skipped $filename because it's only for Android."
+      continue
+    fi
 
-    mkdir -p "$images_assets_dir"
-    cp "$file" "$images_assets_dir"/"$file"
+    local imageset_dir="$ROOT_DIR/$ASSETS_DIR/$filename".imageset
+    mkdir -p $imageset_dir
+    cp $file "$imageset_dir/$file"
 
-    createContentsJson "$fname" "$images_assets_dir"
+    create_contents_json $filename $imageset_dir
+
+    echo "Exported $file"
   done
-  echo "Created assets"
 
-  cd $root_dir
-  mkdir -p "$tmp_app_icon_dir"
-  cp -R "$images_asssets_dir"/"AppIcon.appiconset" "${tmp_app_icon_dir}"/
-  echo "Copied app icon"
+  echo "Exported all images."
 }
 
-function createContentsJson() {
-  filename="$1"
-  icon_assets_dir="$2"
-  cat <<EOF > "$icon_assets_dir"/Contents.json
+function create_contents_json() {
+  local filename=$1
+  local imageset_dir=$2
+  cat <<EOF > "$imageset_dir"/Contents.json
 {
   "images" : [
     {
       "idiom" : "universal",
+      "filename" : "$filename.png",
       "scale" : "1x"
     },
     {
@@ -75,51 +68,33 @@ function createContentsJson() {
 EOF
 }
 
+function send_pull_request() {
+  cd $ROOT_DIR
 
-function replaceAssets() {
-  # rm -rf "$images_asssets_dir"
-  # mv "$tmp_app_icon_asssets_dir" ../
-  # mv "$tmp_images_asssets_dir" ../
-  echo "Replaced assets"
-}
+  git branch -D $COMPARE_BRANCH || true
+  git checkout -b $COMPARE_BRANCH
+  git add $ASSETS_DIR
 
-
-function deleteDirs() {
-  # rm -rf ./"$tmp_images_dir"
-  # rm -rf ./"$tmp_app_icon_dir"
-  # rm -rf "$images_dir"
-  echo "Removed dirs and files"
-}
-
-
-function sendPullRequest() {
-  git branch -D "${branch_name}" || true
-  git checkout -b "${branch_name}"
-  git add $images_asssets_dir
-
-  if [[ -z "$github_token" ]] ; then
-    echo "github token is not set"
+  if [[ -z $github_token ]] ; then
+    echo "github token is not set."
     exit 1
   fi
 
-  if [[ -n "`git status --porcelain | grep ${images_asssets_dir}`" ]]; then
+  if [[ -n "`git status --porcelain | grep $ASSETS_DIR`" ]]; then
     git commit -m "Import images from Sketch"
-    git push -f origin $branch_name
+    git push -f origin $COMPARE_BRANCH
     curl -s -X POST -H "Authorization: token $github_token" -d @- https://api.github.com/repos/konifar/sketch-export-sample/pulls <<EOF
 {
     "title":"Import images from Sketch",
-    "head":"${branch_name}",
-    "base":"${base_branch}"
+    "head":"${COMPARE_BRANCH}",
+    "base":"${BASE_BRANCH}"
 }
 EOF
-    echo "Sent PullRequest"
+    echo "Sent PullRequest."
   else
-    echo "No changed files"
+    echo "No changed files."
   fi
 }
 
-
-exportImages
-replaceAssets
-deleteDirs
-sendPullRequest
+export_images
+send_pull_request

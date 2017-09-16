@@ -1,8 +1,11 @@
 # sketch-export-sample [![Build Status](https://travis-ci.org/konifar/sketch-export-sample.svg?branch=master)](https://travis-ci.org/konifar/sketch-export-sample)
-This exports the icons in Sketch files to Android/iOS projects. [SpeakerDeck](https://speakerdeck.com/konifar/import-sketch-icons-to-assets-catalog-on-ci)
-It makes the communication between the engineers and the desginers easier.
+This exports the icons in Sketch files to Android/iOS projects.
 
 # Overview
+- Easy to manage both Android and iOS icons.
+- All the engineer needs to do are only checking Pull Request which is created by CI.
+- Good bye human error.
+
 ![overview](docs/overview.png)
 
 ## 1. Push Sketch file to GitHub
@@ -19,7 +22,9 @@ Icon | ic_{name}_{size} | ic_quiz_24, ic_star_48
 - If the designer is not familiar with Git, [git-sketch-plugin](https://github.com/mathieudutour/git-sketch-plugin) might help. This tool provides `Git` menu and we can commit and push on Sketch. Plus, it generates the preview image file per Art board. We can check the image diff on Pull Request.
 
 ## 2. Export icons by Sketch tool
+- On CI, Sketch tool is installed in [install_sketch.sh](https://github.com/konifar/sketch-export-sample/blob/master/scripts/install_sketch.sh)
 - [sketch tool](https://www.sketchapp.com/tool/) provides some command line tool for Sketch.
+- The icons in `images.sketch` is exported in [export-images.sh](https://github.com/konifar/sketch-export-sample/blob/master/scripts/export_images.sh)
 
 ```shell
 % sketchtool export slices images.sketch --output=out/images
@@ -30,4 +35,52 @@ Exported ic_todo_schedule_24@3x.png
 …
 ```
 
-## 
+## 3. Apply images to iOS/Android project.
+### iOS
+- [import_to_ios.sh](https://github.com/konifar/sketch-export-sample/blob/master/scripts/import_to_ios.sh) creates Asset catalog.
+- Sketch tool supports to export the pdf file too. (But this repository doesn't support. Welcome your contribution!)
+- Actually, the structure of Asset catalog is so simple.
+
+#### File structure
+```shell
+Assets.xcassets
+├ ic_shopping_cart_24.imageset
+  ├ Contents.json
+  ├ ic_shopping_cart_24.png
+  ├ ic_shopping_cart_24@2x.png
+  ├ ic_shopping_cart_24@3x.png
+```
+
+#### Contents.json
+```json
+{
+  "images" : [
+    {
+      "idiom" : "universal",
+      "filename" : "ic_shopping_cart_24.png",
+      "scale" : "1x"
+    },
+    {
+      "idiom" : "universal",
+      "filename" : "ic_shopping_cart_24@2x.png",
+      "scale" : "2x"
+    },
+    {
+      "idiom" : "universal",
+      "filename" : "ic_shopping_cart_24@3x.png",
+      "scale" : "3x"
+    }
+  ],
+  "info" : {
+    "version" : 1,
+    "author" : "xcode"
+  }
+}
+```
+
+### Android
+Will update soon.
+
+## 4. Send Pull Request to iOS/Android repository.
+- Pull Request are send automatically if it's changed. See https://github.com/konifar/sketch-export-sample/pull/6
+- Only Engineers have to do is to check and merge the Pull Request!

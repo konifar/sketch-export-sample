@@ -14,7 +14,20 @@ readonly COMPARE_BRANCH="import_ios_images_to_$BASE_BRANCH"
 function export_images() {
   cd $IMAGES_DIR
 
-  for file in *.png *@2x.png *@3x.png ; do
+  # pdf svg type
+  for file in *.pdf ; do
+    local filename=${file%%.*}
+    local imageset_dir="$ROOT_DIR/$ASSETS_DIR/$filename".imageset
+    mkdir -p $imageset_dir
+    cp $file "$imageset_dir/$file"
+
+    create_contents_json_for_pdf $filename $imageset_dir
+
+    echo "Exported $file"
+  done
+
+  # png type
+  for file in *@2x.png *@3x.png ; do
     if [[ $file == *"@"* ]] ; then
       local filename=${file%%@*}
     else
@@ -27,10 +40,16 @@ function export_images() {
     fi
 
     local imageset_dir="$ROOT_DIR/$ASSETS_DIR/$filename".imageset
+
+    if ls $imageset_dir/*.pdf > /dev/null 2>&1
+    then
+      continue
+    fi
+
     mkdir -p $imageset_dir
     cp $file "$imageset_dir/$file"
 
-    create_contents_json $filename $imageset_dir
+    create_contents_json_for_png $filename $imageset_dir
 
     echo "Exported $file"
   done
@@ -38,17 +57,12 @@ function export_images() {
   echo "Exported all images."
 }
 
-function create_contents_json() {
+function create_contents_json_for_png() {
   local filename=$1
   local imageset_dir=$2
   cat <<EOF > "$imageset_dir"/Contents.json
 {
   "images" : [
-    {
-      "idiom" : "universal",
-      "filename" : "$filename.png",
-      "scale" : "1x"
-    },
     {
       "idiom" : "universal",
       "filename" : "$filename@2x.png",
@@ -58,6 +72,25 @@ function create_contents_json() {
       "idiom" : "universal",
       "filename" : "$filename@3x.png",
       "scale" : "3x"
+    }
+  ],
+  "info" : {
+    "version" : 1,
+    "author" : "xcode"
+  }
+}
+EOF
+}
+
+function create_contents_json_for_pdf() {
+  local filename=$1
+  local imageset_dir=$2
+  cat <<EOF > "$imageset_dir"/Contents.json
+{
+  "images" : [
+    {
+      "idiom" : "universal",
+      "filename" : "$filename.pdf"
     }
   ],
   "info" : {
